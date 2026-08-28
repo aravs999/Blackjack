@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Last Call — Solo Twenty-One</title>
+<style>
+  :root{
+    --bg: #150d1a;
+    --panel: #211829;
+    --felt: #123526;
+    --felt-dark: #0b241a;
+    --gold: #c9a227;
+    --gold-bright: #e6c65c;
+    --cream: #f3ead8;
+    --ink: #241a2e;
+    --red: #a5293b;
+    --muted: #9c8aa8;
+    --radius: 14px;
+    --serif: 'Playfair Display', Georgia, serif;
+    --sans: 'Inter', system-ui, sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  body{
+    margin:0;
+    min-height:100vh;
+    background:
+      radial-gradient(circle at 50% 0%, #2a1c33 0%, var(--bg) 55%);
+    font-family: var(--sans);
+    color: var(--cream);
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding: 32px 16px 60px;
+  }
+
+  @font-face{ /* fallback-safe, will use system fonts if CDN blocked */ }
+
+  header{
+    text-align:center;
+    margin-bottom: 18px;
+  }
+  h1{
+    font-family: var(--serif);
+    font-weight: 700;
+    font-size: clamp(2rem, 5vw, 3rem);
+    letter-spacing: 0.02em;
+    margin: 0 0 4px;
+    color: var(--gold-bright);
+    text-shadow: 0 2px 12px rgba(201,162,39,0.25);
+  }
+  .tagline{
+    color: var(--muted);
+    font-size: 0.85rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  .table{
+    width: min(720px, 100%);
+    background:
+      radial-gradient(ellipse at 50% 20%, var(--felt) 0%, var(--felt-dark) 80%);
+    border: 1px solid rgba(201,162,39,0.35);
+    border-radius: 28px;
+    padding: 28px 20px 22px;
+    box-shadow:
+      inset 0 0 60px rgba(0,0,0,0.45),
+      0 20px 50px rgba(0,0,0,0.5);
+    position: relative;
+  }
+  .table::before{
+    content:"";
+    position:absolute; inset: 10px;
+    border: 1px dashed rgba(201,162,39,0.18);
+    border-radius: 20px;
+    pointer-events:none;
+  }
+
+  .zone{ margin-bottom: 22px; }
+  .zone-label{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-family: var(--serif);
+    font-size: 1rem;
+    color: var(--gold);
+    margin-bottom: 8px;
+    letter-spacing: 0.04em;
+  }
+  .zone-label .score{
+    font-family: var(--sans);
+    font-weight: 700;
+    color: var(--cream);
+    background: rgba(0,0,0,0.3);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+
+  .hand{
+    display:flex;
+    gap: 10px;
+    min-height: 116px;
+    flex-wrap: wrap;
+  }
+
+  .card{
+    width: 74px;
+    height: 104px;
+    border-radius: 8px;
+    background: var(--cream);
+    box-shadow: 0 6px 14px rgba(0,0,0,0.4);
+    position: relative;
+    animation: deal 260ms ease-out;
+    flex-shrink: 0;
+  }
+  @keyframes deal{
+    from{ transform: translateY(-30px) rotate(-6deg); opacity:0; }
+    to{ transform: translateY(0) rotate(0); opacity:1; }
+  }
+  .card.back{
+    background:
+      repeating-linear-gradient(45deg, var(--felt-dark) 0 6px, var(--ink) 6px 12px);
+    border: 2px solid var(--gold);
+  }
+  .card svg{ width:100%; height:100%; display:block; }
+
+  .controls{
+    display:flex;
+    gap: 12px;
+    justify-content:center;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  button{
+    font-family: var(--sans);
+    font-weight: 600;
+    font-size: 0.9rem;
+    letter-spacing: 0.03em;
+    padding: 12px 22px;
+    border-radius: 999px;
+    border: 1px solid var(--gold);
+    background: transparent;
+    color: var(--gold-bright);
+    cursor: pointer;
+    transition: transform 120ms ease, background 120ms ease, color 120ms ease;
+  }
+  button:hover:not(:disabled){
+    background: var(--gold);
+    color: var(--ink);
+    transform: translateY(-2px);
+  }
+  button:disabled{ opacity: 0.35; cursor: not-allowed; }
+  button.primary{ background: var(--gold); color: var(--ink); }
+  button.primary:hover:not(:disabled){ background: var(--gold-bright); }
+
+  .status{
+    text-align:center;
+    margin-top: 18px;
+    min-height: 28px;
+    font-family: var(--serif);
+    font-size: 1.15rem;
+    color: var(--cream);
+  }
+  .status.win{ color: #7fd99a; }
+  .status.lose{ color: var(--red); }
+  .status.push{ color: var(--gold-bright); }
+
+  .stats{
+    width: min(720px, 100%);
+    display:flex;
+    justify-content: space-between;
+    margin-top: 16px;
+    padding: 0 8px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .stats b{ color: var(--gold-bright); }
+
+  .bet-row{
+    display:flex; gap:10px; justify-content:center; align-items:center;
+    margin-top: 14px; flex-wrap: wrap;
+  }
+  .chip{
+    width:44px; height:44px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-family: var(--serif); font-weight:700; font-size:0.8rem;
+    border: 2px dashed var(--cream);
+    cursor:pointer; color: var(--ink);
+    transition: transform 120ms ease;
+  }
+  .chip:hover{ transform: scale(1.08); }
+  .chip[data-v="5"]{ background:#7fb3a3; }
+  .chip[data-v="25"]{ background:var(--gold); }
+  .chip[data-v="100"]{ background:#c46a6a; }
+
+  footer{
+    margin-top: 30px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align:center;
+    max-width: 560px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Last Call</h1>
+  <div class="tagline">a solitaire game of twenty-one</div>
+</header>
+
+<div class="table">
+  <div class="zone">
+    <div class="zone-label"><span>Dealer</span><span class="score" id="dealerScore">–</span></div>
+    <div class="hand" id="dealerHand"></div>
+  </div>
+  <div class="zone">
+    <div class="zone-label"><span>You</span><span class="score" id="playerScore">–</span></div>
+    <div class="hand" id="playerHand"></div>
+  </div>
+
+  <div class="status" id="status">Place a bet to begin.</div>
+
+  <div class="bet-row" id="betRow">
+    <span style="color:var(--muted); font-size:0.85rem;">Bet:</span>
+    <div class="chip" data-v="5">5</div>
+    <div class="chip" data-v="25">25</div>
+    <div class="chip" data-v="100">100</div>
+    <button id="clearBet">Clear</button>
+  </div>
+
+  <div class="controls">
+    <button class="primary" id="dealBtn">Deal</button>
+    <button id="hitBtn" disabled>Hit</button>
+    <button id="standBtn" disabled>Stand</button>
+  </div>
+</div>
+
+<div class="stats">
+  <span>Bankroll: <b id="bankroll">200</b></span>
+  <span>Current bet: <b id="currentBet">0</b></span>
+  <span>Round: <b id="roundNum">0</b></span>
+</div>
+
+<footer>
+  All card faces are drawn with inline SVG and styled with CSS variables — no image assets.
+  Swap colors in <code>:root</code>, or edit the <code>RULES</code> object in the script to change
+  hit/stand thresholds, bust limits, payouts, or deck composition.
+</footer>
+
+<script>
+/* ======================================================================
+   RULES — edit this block to change the game's logic without touching
+   rendering code. This is the whole "house rules" of the game.
+   ====================================================================== */
+const RULES = {
+  bustAt: 21,               // going over this busts
+  dealerStandsOn: 17,       // dealer hits until reaching this total
+  aceLow: 1,
+  aceHigh: 11,
+  blackjackPayoutMultiplier: 1.5, // natural 21 on first two cards
+  winPayoutMultiplier: 1,
+  startingBankroll: 200,
+  suits: ['♠','♥','♦','♣'],
+  ranks: ['A','2','3','4','5','6','7','8','9','10','J','Q','K'],
+  rankValue(rank){
+    if (rank === 'A') return RULES.aceHigh; // resolved dynamically in scoring
+    if (['J','Q','K'].includes(rank)) return 10;
+    return parseInt(rank, 10);
+  }
+};
+
+/* ======================================================================
+   CARD RENDERING — fully custom SVG faces. Change suitGlyph() or the
+   color tokens above to reskin the deck.
+   ====================================================================== */
+function suitColor(suit){
+  return (suit === '♥' || suit === '♦') ? 'var(--red)' : 'var(--ink)';
+}
+
+function cardFaceSVG(card){
+  const color = suitColor(card.suit);
+  return `
+    <svg viewBox="0 0 74 104" xmlns="http://www.w3.org/2000/svg">
+      <rect x="1" y="1" width="72" height="102" rx="7" fill="var(--cream)" stroke="${color}" stroke-width="1.2" opacity="0.5"/>
+      <text x="8" y="20" font-family="Georgia, serif" font-size="15" font-weight="700" fill="${color}">${card.rank}</text>
+      <text x="8" y="34" font-family="Georgia, serif" font-size="14" fill="${color}">${card.suit}</text>
+      <text x="66" y="94" font-family="Georgia, serif" font-size="15" font-weight="700" fill="${color}" text-anchor="end" transform="rotate(180 66 94)">${card.rank}</text>
+      <text x="66" y="80" font-family="Georgia, serif" font-size="14" fill="${color}" text-anchor="end" transform="rotate(180 66 80)">${card.suit}</text>
+      <text x="37" y="62" font-family="Georgia, serif" font-size="30" fill="${color}" text-anchor="middle">${card.suit}</text>
+    </svg>`;
+}
+
+function renderCard(card, faceDown=false){
+  const el = document.createElement('div');
+  el.className = 'card' + (faceDown ? ' back' : '');
+  if (!faceDown) el.innerHTML = cardFaceSVG(card);
+  return el;
+}
+
+/* ======================================================================
+   GAME STATE
+   ====================================================================== */
+let deck = [];
+let player = [];
+let dealer = [];
+let bankroll = RULES.startingBankroll;
+let currentBet = 0;
+let round = 0;
+let inRound = false;
+
+const els = {
+  dealerHand: document.getElementById('dealerHand'),
+  playerHand: document.getElementById('playerHand'),
+  dealerScore: document.getElementById('dealerScore'),
+  playerScore: document.getElementById('playerScore'),
+  status: document.getElementById('status'),
+  dealBtn: document.getElementById('dealBtn'),
+  hitBtn: document.getElementById('hitBtn'),
+  standBtn: document.getElementById('standBtn'),
+  bankroll: document.getElementById('bankroll'),
+  currentBet: document.getElementById('currentBet'),
+  roundNum: document.getElementById('roundNum'),
+  betRow: document.getElementById('betRow'),
+};
+
+function freshDeck(){
+  const d = [];
+  for (const suit of RULES.suits){
+    for (const rank of RULES.ranks){
+      d.push({ suit, rank });
+    }
+  }
+  // shuffle (Fisher-Yates)
+  for (let i = d.length - 1; i > 0; i--){
+    const j = Math.floor(Math.random() * (i + 1));
+    [d[i], d[j]] = [d[j], d[i]];
+  }
+  return d;
+}
+
+function scoreHand(hand){
+  let total = 0;
+  let aces = 0;
+  for (const c of hand){
+    if (c.rank === 'A'){ aces++; total += RULES.aceHigh; }
+    else total += RULES.rankValue(c.rank);
+  }
+  while (total > RULES.bustAt && aces > 0){
+    total -= (RULES.aceHigh - RULES.aceLow);
+    aces--;
+  }
+  return total;
+}
+
+function isBlackjack(hand){
+  return hand.length === 2 && scoreHand(hand) === RULES.bustAt;
+}
+
+function draw(){
+  if (deck.length === 0) deck = freshDeck();
+  return deck.pop();
+}
+
+function setStatus(text, cls=''){
+  els.status.textContent = text;
+  els.status.className = 'status' + (cls ? ' ' + cls : '');
+}
+
+function renderHands(revealDealer){
+  els.playerHand.innerHTML = '';
+  player.forEach(c => els.playerHand.appendChild(renderCard(c)));
+  els.playerScore.textContent = scoreHand(player);
+
+  els.dealerHand.innerHTML = '';
+  dealer.forEach((c, i) => {
+    const hide = (!revealDealer && i === 1);
+    els.dealerHand.appendChild(renderCard(c, hide));
+  });
+  els.dealerScore.textContent = revealDealer ? scoreHand(dealer) : '?';
+}
+
+function updateStats(){
+  els.bankroll.textContent = bankroll;
+  els.currentBet.textContent = currentBet;
+  els.roundNum.textContent = round;
+}
+
+function setBet(v){
+  if (inRound) return;
+  if (currentBet + v > bankroll) return;
+  currentBet += v;
+  updateStats();
+}
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', () => setBet(parseInt(chip.dataset.v, 10)));
+});
+document.getElementById('clearBet').addEventListener('click', () => {
+  if (inRound) return;
+  currentBet = 0;
+  updateStats();
+});
+
+function startRound(){
+  if (currentBet <= 0){
+    setStatus('Place a bet first.', '');
+    return;
+  }
+  inRound = true;
+  round++;
+  deck = deck.length < 15 ? freshDeck() : deck;
+  player = [draw(), draw()];
+  dealer = [draw(), draw()];
+  renderHands(false);
+  updateStats();
+
+  els.dealBtn.disabled = true;
+  els.hitBtn.disabled = false;
+  els.standBtn.disabled = false;
+  els.betRow.style.pointerEvents = 'none';
+  els.betRow.style.opacity = 0.5;
+
+  if (isBlackjack(player) || isBlackjack(dealer)){
+    endRound();
+  } else {
+    setStatus('Hit or stand.');
+  }
+}
+
+function hit(){
+  if (!inRound) return;
+  player.push(draw());
+  renderHands(false);
+  if (scoreHand(player) > RULES.bustAt){
+    endRound();
+  }
+}
+
+function dealerPlay(){
+  while (scoreHand(dealer) < RULES.dealerStandsOn){
+    dealer.push(draw());
+  }
+}
+
+function endRound(){
+  inRound = false;
+  els.hitBtn.disabled = true;
+  els.standBtn.disabled = true;
+
+  const playerBust = scoreHand(player) > RULES.bustAt;
+  if (!playerBust) dealerPlay();
+
+  renderHands(true);
+
+  const pScore = scoreHand(player);
+  const dScore = scoreHand(dealer);
+  const playerBJ = isBlackjack(player);
+  const dealerBJ = isBlackjack(dealer);
+  const dealerBust = dScore > RULES.bustAt;
+
+  let outcome, cls, delta;
+
+  if (playerBust){
+    outcome = `Bust at ${pScore}. Dealer takes the pot.`; cls = 'lose'; delta = -currentBet;
+  } else if (playerBJ && dealerBJ){
+    outcome = `Both twenty-one. Push.`; cls = 'push'; delta = 0;
+  } else if (playerBJ){
+    delta = Math.floor(currentBet * RULES.blackjackPayoutMultiplier);
+    outcome = `Twenty-one! You win ${delta}.`; cls = 'win';
+  } else if (dealerBJ){
+    outcome = `Dealer has twenty-one. You lose.`; cls = 'lose'; delta = -currentBet;
+  } else if (dealerBust){
+    delta = Math.floor(currentBet * RULES.winPayoutMultiplier);
+    outcome = `Dealer busts at ${dScore}. You win ${delta}.`; cls = 'win';
+  } else if (pScore > dScore){
+    delta = Math.floor(currentBet * RULES.winPayoutMultiplier);
+    outcome = `${pScore} beats ${dScore}. You win ${delta}.`; cls = 'win';
+  } else if (pScore < dScore){
+    outcome = `${dScore} beats ${pScore}. You lose.`; cls = 'lose'; delta = -currentBet;
+  } else {
+    outcome = `Push at ${pScore}.`; cls = 'push'; delta = 0;
+  }
+
+  bankroll += delta;
+  setStatus(outcome, cls);
+  currentBet = 0;
+  updateStats();
+
+  els.dealBtn.disabled = bankroll <= 0;
+  els.betRow.style.pointerEvents = 'auto';
+  els.betRow.style.opacity = 1;
+
+  if (bankroll <= 0){
+    setStatus('Out of chips. Refresh to play again.', 'lose');
+  }
+}
+
+function stand(){
+  endRound();
+}
+
+els.dealBtn.addEventListener('click', startRound);
+els.hitBtn.addEventListener('click', hit);
+els.standBtn.addEventListener('click', stand);
+
+updateStats();
+</script>
+
+</body>
+</html>
