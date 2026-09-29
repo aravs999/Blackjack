@@ -58,6 +58,8 @@ let bankroll = RULES.startingBankroll;
 let currentBet = 0;
 let round = 0;
 let inRound = false;
+let wins = 0;
+let losses = 0;
 
 const els = {
     dealerHand: document.getElementById('dealerHand'),
@@ -71,6 +73,8 @@ const els = {
     bankroll: document.getElementById('bankroll'),
     currentBet: document.getElementById('currentBet'),
     roundNum: document.getElementById('roundNum'),
+    wins: document.getElementById('wins'),
+    losses: document.getElementById('losses'),
     betRow: document.getElementById('betRow'),
 };
 
@@ -134,6 +138,8 @@ function updateStats() {
     els.bankroll.textContent = bankroll;
     els.currentBet.textContent = currentBet;
     els.roundNum.textContent = round;
+    els.wins.textContent = wins;
+    els.losses.textContent = losses;
 }
 
 function setBet(v) {
@@ -232,6 +238,8 @@ function endRound() {
         outcome = `Push at ${pScore}.`; cls = 'push'; delta = 0;
     }
 
+    if (cls === 'win') wins++;
+    if (cls === 'lose') losses++;
     bankroll += delta;
     setStatus(outcome, cls);
     currentBet = 0;
