@@ -54,6 +54,7 @@ function renderCard(card, faceDown = false) {
 let deck = [];
 let player = [];
 let dealer = [];
+let dealerVisibleCards = 1;
 let bankroll = RULES.startingBankroll;
 let currentBet = 0;
 let round = 0;
@@ -121,17 +122,17 @@ function setStatus(text, cls = '') {
     els.status.className = 'status' + (cls ? ' ' + cls : '');
 }
 
-function renderHands(revealDealer) {
+function renderHands() {
     els.playerHand.innerHTML = '';
     player.forEach(c => els.playerHand.appendChild(renderCard(c)));
     els.playerScore.textContent = scoreHand(player);
 
     els.dealerHand.innerHTML = '';
     dealer.forEach((c, i) => {
-        const hide = (!revealDealer && i === 1);
+        const hide = i >= dealerVisibleCards;
         els.dealerHand.appendChild(renderCard(c, hide));
     });
-    els.dealerScore.textContent = revealDealer ? scoreHand(dealer) : '?';
+    els.dealerScore.textContent = dealerVisibleCards >= dealer.length ? scoreHand(dealer) : '?';
 }
 
 function updateStats() {
@@ -158,7 +159,7 @@ document.getElementById('clearBet').addEventListener('click', () => {
     updateStats();
 });
 
-function startRound() {
+async function startRound() {
     if (currentBet <= 0) {
         setStatus('Place a bet first.', '');
         return;
@@ -168,7 +169,8 @@ function startRound() {
     deck = deck.length < 15 ? freshDeck() : deck;
     player = [draw(), draw()];
     dealer = [draw(), draw()];
-    renderHands(false);
+    dealerVisibleCards = 1;
+    renderHands();
     updateStats();
 
     els.dealBtn.disabled = true;
@@ -178,36 +180,53 @@ function startRound() {
     els.betRow.style.opacity = 0.5;
 
     if (isBlackjack(player) || isBlackjack(dealer)) {
-        endRound();
+        await endRound(true);
     } else {
         setStatus('Hit or stand.');
     }
 }
 
-function hit() {
+async function hit() {
     if (!inRound) return;
     player.push(draw());
-    renderHands(false);
+    renderHands();
     if (scoreHand(player) > RULES.bustAt) {
-        endRound();
+        await endRound(true);
     }
 }
 
-function dealerPlay() {
+async function dealerPlay() {
+    setStatus('Dealer is playing...');
+
+    while (dealerVisibleCards < dealer.length) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        dealerVisibleCards++;
+        renderHands();
+    }
+
     while (scoreHand(dealer) < RULES.dealerStandsOn) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
         dealer.push(draw());
+        dealerVisibleCards++;
+        renderHands();
     }
 }
 
-function endRound() {
+async function endRound(revealDealerImmediately = false) {
     inRound = false;
     els.hitBtn.disabled = true;
     els.standBtn.disabled = true;
 
     const playerBust = scoreHand(player) > RULES.bustAt;
-    if (!playerBust) dealerPlay();
+    if (!playerBust && revealDealerImmediately) {
+        dealerVisibleCards = dealer.length;
+    } else if (!playerBust) {
+        await dealerPlay();
+    } else {
+        dealerVisibleCards = dealer.length;
+    }
 
-    renderHands(true);
+    renderHands();
 
     const pScore = scoreHand(player);
     const dScore = scoreHand(dealer);
@@ -254,8 +273,8 @@ function endRound() {
     }
 }
 
-function stand() {
-    endRound();
+async function stand() {
+    await endRound();
 }
 
 els.dealBtn.addEventListener('click', startRound);
