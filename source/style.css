@@ -1,0 +1,26 @@
+* { box-sizing: border-box; }
+body { font-family: Georgia, serif; background: #0b3d24; color: #f5f0e6; text-align: center; margin: 0; padding: 24px 12px; }
+h1 { color: #d4af37; letter-spacing: 0.1em; margin: 0 0 12px; }
+h2 { margin: 0 0 8px; }
+.stats { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
+.stats b { color: #d4af37; }
+
+#table { background: radial-gradient(ellipse at center, #0f4a2c, #0a3320); border: 10px solid #5c3a21; border-radius: 160px / 60px; padding: 28px 24px; max-width: 520px; margin: 14px auto; }
+#dealer-area, #player-area { background: #0a0a0a; border: 2px solid #d4af37; border-radius: 12px; padding: 12px; margin: 12px auto; max-width: 400px; }
+#dealer-cards, #player-cards { display: flex; gap: 8px; justify-content: center; min-height: 76px; }
+
+.card { background: #f5f0e6; color: #0a0a0a; border-radius: 6px; width: 52px; height: 76px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; box-shadow: 0 3px 6px rgba(0,0,0,0.5); }
+.card.red { color: #b3242c; }
+.card.back { background: repeating-linear-gradient(45deg, #b3242c 0 6px, #7d1a20 6px 12px); border: 3px solid #f5f0e6; }
+
+#message { min-height: 28px; font-size: 1.15rem; }
+#chips { margin-bottom: 10px; }
+.chip { width: 56px; height: 56px; border-radius: 50%; border: 4px dashed #f5f0e6; font-weight: bold; font-size: 1rem; margin: 4px; cursor: pointer; }
+.chip[data-v="5"] { background: #b3242c; color: #f5f0e6; }
+.chip[data-v="25"] { background: #2e8b57; color: #f5f0e6; }
+.chip[data-v="100"] { background: #0a0a0a; color: #d4af37; }
+.chip:hover:not(:disabled) { transform: scale(1.08); }
+
+.action { font-size: 1rem; padding: 10px 24px; margin: 6px; border-radius: 999px; border: 2px solid #b3242c; background: #b3242c; color: #f5f0e6; cursor: pointer; }
+.action:hover:not(:disabled) { background: #d4af37; border-color: #d4af37; color: #0a0a0a; }
+button:disabled { opacity: 0.4; cursor: not-allowed; }
