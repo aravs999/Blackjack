@@ -4,6 +4,32 @@ const STARTING_BALANCE = 500;
 const DEALER_STANDS_ON = 17;
 const DELAY = 1000;
 
+const STORAGE_KEY = "blackjack-progress";
+
+function loadProgress() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+
+  if (!saved) {
+    return {
+      balance: STARTING_BALANCE,
+      wins: 0,
+      losses: 0
+    };
+  }
+
+  return JSON.parse(saved);
+}
+
+function saveProgress(game) {
+  const progress = {
+    balance: game.balance,
+    wins: game.wins,
+    losses: game.losses
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+}
+
 class Card {
   constructor(rank, suit) {
     this.rank = rank;
@@ -76,21 +102,25 @@ class Hand {
 }
 
 function createGame(onChange) {
+  
+  const savedProgress = loadProgress();
+  
   const game = {
     deck: new Deck(),
     player: new Hand(),
     dealer: new Hand(),
     dealerRevealed: true,
-    balance: STARTING_BALANCE,
+    balance: savedProgress.balance,
     bet: 0,
-    wins: 0,
-    losses: 0,
+    wins: savedProgress.wins,
+    losses: savedProgress.losses,
     inRound: false,
     busy: false,
     message: "",
   };
 
   function notify() {
+    saveProgress(game);
     onChange();
   }
 
