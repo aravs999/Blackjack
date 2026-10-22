@@ -142,6 +142,20 @@ function createGame(onChange) {
     await finish();
   }
 
+  async function doubleDown() {
+    if (
+      !game.inRound ||
+      game.busy ||
+      game.player.cards.length !== 2 ||
+      game.bet * 2 > game.balance
+    ) return;
+
+    game.bet *= 2;
+    game.player.add(game.deck.draw());
+    notify();
+    await finish();
+  }
+
   async function finish() {
     if (!game.inRound) return;
 
@@ -212,6 +226,7 @@ function createGame(onChange) {
   game.startRound = startRound;
   game.hit = hit;
   game.stand = stand;
+  game.doubleDown = doubleDown;
   return game;
 }
 
@@ -239,6 +254,7 @@ function initializeGameUI() {
     dealButton: document.getElementById("deal-btn"),
     hitButton: document.getElementById("hit-btn"),
     standButton: document.getElementById("stand-btn"),
+    doubleButton: document.getElementById("double-btn"),
     clearButton: document.getElementById("clear-btn"),
     message: document.getElementById("message"),
     dealerTotal: document.getElementById("dealer-total"),
@@ -257,6 +273,11 @@ function initializeGameUI() {
     elements.dealButton.disabled = game.inRound || game.busy || game.bet === 0;
     elements.hitButton.disabled = !game.inRound;
     elements.standButton.disabled = !game.inRound;
+    elements.doubleButton.disabled =
+      !game.inRound ||
+      game.busy ||
+      game.player.cards.length !== 2 ||
+      game.bet * 2 > game.balance;
     elements.clearButton.disabled = game.inRound || game.busy;
     elements.chips.forEach(chip => {
       chip.disabled = game.inRound || game.busy;
@@ -281,6 +302,7 @@ function initializeGameUI() {
   elements.dealButton.addEventListener("click", () => game.startRound());
   elements.hitButton.addEventListener("click", () => game.hit());
   elements.standButton.addEventListener("click", () => game.stand());
+  elements.doubleButton.addEventListener("click", () => game.doubleDown());
   render();
 }
 
