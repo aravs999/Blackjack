@@ -4,6 +4,10 @@ h1 { color: #d4af37; letter-spacing: 0.1em; margin: 0 0 12px; }
 h2 { margin: 0 0 8px; }
 .stats { display: flex; gap: 18px; justify-content: center; flex-wrap: wrap; }
 .stats b { color: #d4af37; }
+.count-display { position: relative; }
+.count-help { width: 20px; height: 20px; padding: 0; border: 1px solid #d4af37; border-radius: 50%; background: transparent; color: #d4af37; font: bold 0.8rem Georgia, serif; cursor: help; }
+.tooltip { position: absolute; z-index: 1; top: calc(100% + 8px); left: 50%; width: 240px; padding: 10px; border: 1px solid #d4af37; border-radius: 6px; background: #0a0a0a; color: #f5f0e6; font-size: 0.9rem; line-height: 1.4; text-align: left; visibility: hidden; opacity: 0; transform: translateX(-50%); transition: opacity 0.15s; }
+.count-help:hover + .tooltip, .count-help:focus + .tooltip { visibility: visible; opacity: 1; }
 
 #table { background: radial-gradient(ellipse at center, #0f4a2c, #0a3320); border: 10px solid #5c3a21; border-radius: 160px / 60px; padding: 28px 24px; max-width: 520px; margin: 14px auto; }
 #dealer-area, #player-area { background: #0a0a0a; border: 2px solid #d4af37; border-radius: 12px; padding: 12px; margin: 12px auto; max-width: 400px; }

@@ -14,6 +14,11 @@
     <span>Bet: $<b id="bet">0</b></span>
     <span>Wins: <b id="wins">0</b></span>
     <span>Losses: <b id="losses">0</b></span>
+    <span class="count-display">
+      Count: <b id="running-count">0</b>
+      <button class="count-help" type="button" aria-label="About card counting" aria-describedby="count-tooltip">?</button>
+      <span class="tooltip" id="count-tooltip" role="tooltip">Card counting tracks exposed cards: 2–6 add 1, 7–9 do not change the count, and 10–A subtract 1. The count resets when the deck is shuffled.</span>
+    </span>
   </div>
 
   <div id="table">

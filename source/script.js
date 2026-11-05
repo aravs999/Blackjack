@@ -49,6 +49,7 @@ class Deck {
 
   reset() {
     this.cards = [];
+    this.shuffleCount = (this.shuffleCount || 0) + 1;
     for (const suit of SUITS) {
       for (const rank of RANKS) this.cards.push(new Card(rank, suit));
     }
@@ -117,11 +118,32 @@ function createGame(onChange) {
     inRound: false,
     busy: false,
     message: "",
+    runningCount: 0,
+    shuffleCount: 0,
   };
+  game.shuffleCount = game.deck.shuffleCount;
 
   function notify() {
     saveProgress(game);
     onChange();
+  }
+
+  function countCard(card) {
+    if (game.shuffleCount !== game.deck.shuffleCount) {
+      game.runningCount = 0;
+      game.shuffleCount = game.deck.shuffleCount;
+    }
+
+    const value = Number(card.rank);
+    if (value >= 2 && value <= 6) {
+      game.runningCount++;
+    } else if (value === 10 || ["J", "Q", "K", "A"].includes(card.rank)) {
+      game.runningCount--;
+    }
+  }
+
+  function revealDealerCards() {
+    countCard(game.dealer.cards[1]);
   }
 
   function placeBet(value) {
@@ -140,7 +162,6 @@ function createGame(onChange) {
     if (game.inRound || game.busy || game.bet === 0) return;
 
     game.busy = true;
-    game.deck.reset();
     game.player = new Hand();
     game.dealer = new Hand();
     game.dealerRevealed = false;
@@ -148,7 +169,9 @@ function createGame(onChange) {
     notify();
 
     for (const hand of [game.player, game.dealer, game.player, game.dealer]) {
-      hand.add(game.deck.draw());
+      const card = game.deck.draw();
+      hand.add(card);
+      if (hand === game.player || hand.cards.length === 1) countCard(card);
       notify();
       await new Promise(resolve => setTimeout(resolve, DELAY));
     }
@@ -162,7 +185,9 @@ function createGame(onChange) {
 
   async function hit() {
     if (!game.inRound || game.busy) return;
-    game.player.add(game.deck.draw());
+    const card = game.deck.draw();
+    game.player.add(card);
+    countCard(card);
     notify();
     if (game.player.score >= 21) await finish();
   }
@@ -181,7 +206,9 @@ function createGame(onChange) {
     ) return;
 
     game.bet *= 2;
-    game.player.add(game.deck.draw());
+    const card = game.deck.draw();
+    game.player.add(card);
+    countCard(card);
     notify();
     await finish();
   }
@@ -192,6 +219,7 @@ function createGame(onChange) {
     game.inRound = false;
     game.busy = true;
     game.dealerRevealed = true;
+    revealDealerCards();
     notify();
     await new Promise(resolve => setTimeout(resolve, DELAY));
 
@@ -201,7 +229,9 @@ function createGame(onChange) {
 
     if (playerScore <= 21 && !playerBlackjack) {
       while (game.dealer.score < DEALER_STANDS_ON) {
-        game.dealer.add(game.deck.draw());
+        const card = game.deck.draw();
+        game.dealer.add(card);
+        countCard(card);
         notify();
         await new Promise(resolve => setTimeout(resolve, DELAY));
       }
@@ -281,6 +311,7 @@ function initializeGameUI() {
     bet: document.getElementById("bet"),
     wins: document.getElementById("wins"),
     losses: document.getElementById("losses"),
+    runningCount: document.getElementById("running-count"),
     dealButton: document.getElementById("deal-btn"),
     hitButton: document.getElementById("hit-btn"),
     standButton: document.getElementById("stand-btn"),
@@ -300,6 +331,7 @@ function initializeGameUI() {
     elements.bet.textContent = game.bet;
     elements.wins.textContent = game.wins;
     elements.losses.textContent = game.losses;
+    elements.runningCount.textContent = game.runningCount;
     elements.dealButton.disabled = game.inRound || game.busy || game.bet === 0;
     elements.hitButton.disabled = !game.inRound;
     elements.standButton.disabled = !game.inRound;
