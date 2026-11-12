@@ -280,6 +280,24 @@ function createGame(onChange) {
     game.busy = false;
     notify();
   }
+  function resetGame() {
+    if (game.inRound || game.busy) return;
+
+    game.balance = STARTING_BALANCE;
+    game.wins = 0;
+    game.losses = 0;
+    game.bet = 0;
+    game.runningCount = 0;
+    game.player = new Hand();
+    game.dealer = new Hand();
+    game.dealerRevealed = true;
+    game.deck.reset();
+    game.shuffleCount = game.deck.shuffleCount;
+    game.message = "Game reset! Place a bet to begin.";
+    notify();
+  }
+
+  game.resetGame = resetGame;
 
   game.placeBet = placeBet;
   game.clearBet = clearBet;
@@ -317,6 +335,7 @@ function initializeGameUI() {
     standButton: document.getElementById("stand-btn"),
     doubleButton: document.getElementById("double-btn"),
     clearButton: document.getElementById("clear-btn"),
+    resetButton: document.getElementById("reset-btn"),
     message: document.getElementById("message"),
     dealerTotal: document.getElementById("dealer-total"),
     playerTotal: document.getElementById("player-total"),
@@ -341,6 +360,7 @@ function initializeGameUI() {
       game.player.cards.length !== 2 ||
       game.bet * 2 > game.balance;
     elements.clearButton.disabled = game.inRound || game.busy;
+    elements.resetButton.disabled = game.inRound || game.busy;
     elements.chips.forEach(chip => {
       chip.disabled = game.inRound || game.busy;
     });
@@ -361,6 +381,7 @@ function initializeGameUI() {
     });
   });
   elements.clearButton.addEventListener("click", () => game.clearBet());
+  elements.resetButton.addEventListener("click", () => game.resetGame());
   elements.dealButton.addEventListener("click", () => game.startRound());
   elements.hitButton.addEventListener("click", () => game.hit());
   elements.standButton.addEventListener("click", () => game.stand());
