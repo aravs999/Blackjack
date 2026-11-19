@@ -386,6 +386,22 @@ function initializeGameUI() {
   elements.hitButton.addEventListener("click", () => game.hit());
   elements.standButton.addEventListener("click", () => game.stand());
   elements.doubleButton.addEventListener("click", () => game.doubleDown());
+
+  // Keyboard shortcuts for blackjack actions
+  document.addEventListener("keydown", (event) => {
+    if (event.repeat || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.target.matches("input, textarea, select")) return;
+
+    const key = event.key.toLowerCase();
+
+    if (key === "h") {
+      elements.hitButton.click();
+    } else if (key === "s") {
+      elements.standButton.click();
+    } else if (key === "d") {
+      elements.doubleButton.click();
+    }
+  });
   render();
 }
 
